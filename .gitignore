@@ -1,0 +1,13 @@
+# Environment files
+.env
+.env.*
+
+# Node dependencies
+node_modules/
+
+# Build output
+dist/
+
+# System / editor files
+.DS_Store
+*.log
