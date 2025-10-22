@@ -74,7 +74,7 @@ export default function LoginPage() {
     // TODO: Implement Google OAuth login
     window.location.href = `${
       import.meta.env.VITE_API_BASE
-    }/oauth2/authorize/google`;
+    }/oauth2/authorization/google`;
   };
 
   return (
