@@ -3,7 +3,7 @@ import {z} from "zod";
 
 
 const api = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://localhost:8082",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -46,7 +46,7 @@ export const ClubSchema = z.object({
   location: z.string(),
   contact: z.string(),
   description: z.string().nullable().optional(),
-  status: z.enum(["PENDING", "APPROVED", "REJECTED"]),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED","ACTIVE"]),
   ownerUserId: z.number(),
   address: AddressSchema.optional(),
   createdAt: z.string(),
@@ -72,6 +72,7 @@ export const SportSchema = z.object({
 });
 
 
+
 export const CreateClubSchema = z.object({
   name: z.string().min(2, "Club name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
@@ -82,6 +83,8 @@ export const CreateClubSchema = z.object({
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
   country: z.string().min(2, "Country is required"),
+  area:z.string().optional(),
+  googleMapsLink:z.string().optional(),
   postalCode: z.string().min(4, "Postal code is required"),
   sportsOffered: z.array(z.number()).min(1, "Please select at least one sport"),
 });
@@ -115,7 +118,7 @@ export const getMyClub = async (): Promise<Club | null> => {
     const response = await api.get("/api/clubs/my-club");
     console.log("hellooooooo",response)
     const club=ClubSchema.parse(response.data);
-    // club.status = "APPROVED";
+    club.status = "APPROVED";
     return club;
   } catch (error: any) {
     if (error.response?.status === 404) return null;
@@ -125,9 +128,26 @@ export const getMyClub = async (): Promise<Club | null> => {
 
 
 export const createClub = async (data: CreateClubRequest): Promise<Club> => {
-  console.log("heloooooo", data);
-  const response = await api.post("/api/clubs", data);
-  console.log("heloooooo",data);
+  const requestPayload = {
+    name: data.name,
+    email: data.email,
+    location: data.location,
+    contact: data.contact,
+    description: data.description,
+    address: {
+      street: data.street,
+      city: data.city,
+      state: data.state,
+      country: data.country,
+      postalCode: data.postalCode,
+      area: data.area, // Optional field
+      pincode: data.postalCode, // Optional field
+      googleMapsLink: data.googleMapsLink, // Optional field
+    },
+    sportsOffered: data.sportsOffered,
+  };
+  const response = await api.post("/api/clubs", requestPayload);
+  console.log("heloooooo",response);
   return ClubSchema.parse(response.data);
 };
 
@@ -145,9 +165,9 @@ export const deleteMyClub = async (): Promise<void> => {
 };
 
 // Sports Management
-export const getMyClubSports = async (): Promise<Sport[]> => {
+export const getMyClubSports = async (): Promise<SportOption[]> => {
   const response = await api.get("/api/clubs/my-club/sports");
-  return z.array(SportSchema).parse(response.data);
+  return z.array(SportOptionSchema).parse(response.data);
 };
 
 export const addSportToMyClub = async (
