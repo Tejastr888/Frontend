@@ -1,12 +1,10 @@
 import axios from "axios";
-import {z} from "zod";
-
+import { z } from "zod";
 
 const api = axios.create({
   baseURL: "http://localhost:8082",
   headers: { "Content-Type": "application/json" },
 });
-
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("auth.token");
@@ -15,7 +13,6 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
 
 // ============= SCHEMAS =============
 
@@ -31,13 +28,11 @@ export const AddressSchema = z.object({
   googleMapsLink: z.string().nullable().optional(),
 });
 
-
 export const SportOptionSchema = z.object({
   id: z.number(),
   name: z.string(),
   category: z.string(),
 });
-
 
 export const ClubSchema = z.object({
   id: z.number(),
@@ -46,14 +41,13 @@ export const ClubSchema = z.object({
   location: z.string(),
   contact: z.string(),
   description: z.string().nullable().optional(),
-  status: z.enum(["PENDING", "APPROVED", "REJECTED","ACTIVE"]),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED", "ACTIVE"]),
   ownerUserId: z.number(),
   address: AddressSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
   sportsOffered: z.array(z.number()).min(1, "Please select at least one sport"),
 });
-
 
 export const SportSchema = z.object({
   id: z.number(),
@@ -71,8 +65,6 @@ export const SportSchema = z.object({
   updatedAt: z.string(),
 });
 
-
-
 export const CreateClubSchema = z.object({
   name: z.string().min(2, "Club name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
@@ -83,13 +75,11 @@ export const CreateClubSchema = z.object({
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
   country: z.string().min(2, "Country is required"),
-  area:z.string().optional(),
-  googleMapsLink:z.string().optional(),
+  area: z.string().optional(),
+  googleMapsLink: z.string().optional(),
   postalCode: z.string().min(4, "Postal code is required"),
   sportsOffered: z.array(z.number()).min(1, "Please select at least one sport"),
 });
-
-
 
 export const CreateSportSchema = z.object({
   name: z.string().min(2, "Sport name is required"),
@@ -108,16 +98,14 @@ export type CreateClubRequest = z.infer<typeof CreateClubSchema>;
 export type CreateSportRequest = z.infer<typeof CreateSportSchema>;
 export type SportOption = z.infer<typeof SportOptionSchema>;
 
-
-
 // ============= API FUNCTIONS =============
 
 // Club Management
 export const getMyClub = async (): Promise<Club | null> => {
   try {
     const response = await api.get("/api/clubs/my-club");
-    console.log("hellooooooo",response)
-    const club=ClubSchema.parse(response.data);
+    console.log("hellooooooo", response);
+    const club = ClubSchema.parse(response.data);
     club.status = "APPROVED";
     return club;
   } catch (error: any) {
@@ -125,7 +113,6 @@ export const getMyClub = async (): Promise<Club | null> => {
     throw error;
   }
 };
-
 
 export const createClub = async (data: CreateClubRequest): Promise<Club> => {
   const requestPayload = {
@@ -147,11 +134,9 @@ export const createClub = async (data: CreateClubRequest): Promise<Club> => {
     sportsOffered: data.sportsOffered,
   };
   const response = await api.post("/api/clubs", requestPayload);
-  console.log("heloooooo",response);
+  console.log("heloooooo", response);
   return ClubSchema.parse(response.data);
 };
-
-
 
 export const updateMyClub = async (
   data: Partial<CreateClubRequest>
@@ -195,9 +180,10 @@ export const getAllSportsOptions = async (): Promise<SportOption[]> => {
   return z.array(SportOptionSchema).parse(response.data);
 };
 
-
 // Get sports by category
-export const getSportsByCategory = async (category: string): Promise<SportOption[]> => {
+export const getSportsByCategory = async (
+  category: string
+): Promise<SportOption[]> => {
   const response = await api.get(`/api/sports/category/${category}`);
   return z.array(SportOptionSchema).parse(response.data);
 };
