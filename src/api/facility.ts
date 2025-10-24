@@ -72,11 +72,56 @@ export const createFacility = async (
   return FacilitySchema.parse(response.data);
 };
 
-// export const getAllFacilities = async (clubId:number):Promise<[Facility]>=>{
-//   console.log("get all facilities",clubId);
-//   const res = await api.get(`/api/clubs/${clubId}/facilities`);
-//   console.log("list of all facilities",res);
-//   return need your help it returns array of facilities don't know what to do
-// }
+export const getAllFacilities = async (clubId: number): Promise<Facility[]> => {
+  console.log("get all facilities", clubId);
+  const response = await api.get(`/api/clubs/${clubId}/facilities`);
+  console.log("list of all facilities", response.data);
+
+  // Parse the array of facilities using z.array()
+  return z.array(FacilitySchema).parse(response.data);
+};
+
+// Additional utility functions you might find helpful
+export const getFacilityById = async (
+  clubId: number,
+  facilityId: number
+): Promise<Facility> => {
+  console.log("Getting facility:", facilityId, "for club:", clubId);
+  const response = await api.get(
+    `/api/clubs/${clubId}/facilities/${facilityId}`
+  );
+  return FacilitySchema.parse(response.data);
+};
+
+export const updateFacility = async (
+  clubId: number,
+  facilityId: number,
+  data: Partial<CreateFacilityReq>
+): Promise<Facility> => {
+  console.log("Updating facility:", facilityId, "for club:", clubId, data);
+  const response = await api.put(
+    `/api/clubs/${clubId}/facilities/${facilityId}`,
+    data
+  );
+  return FacilitySchema.parse(response.data);
+};
+
+export const deleteFacility = async (
+  clubId: number,
+  facilityId: number,
+  hardDelete: boolean = false
+): Promise<void> => {
+  console.log(
+    "Deleting facility:",
+    facilityId,
+    "for club:",
+    clubId,
+    "hardDelete:",
+    hardDelete
+  );
+  await api.delete(`/api/clubs/${clubId}/facilities/${facilityId}`, {
+    params: { hardDelete },
+  });
+};
 
 export default api;

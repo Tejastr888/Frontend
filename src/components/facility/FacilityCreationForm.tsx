@@ -1,10 +1,7 @@
 import { useState } from "react";
-import {
-  createFacility,
-  CreateFacilityReq,
-  CreateFacilitySchema,
-} from "@/api/facility";
+import * as z from "zod"; // Import zod for schema mocking
 import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -14,30 +11,133 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
-import { DialogHeader } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertCircle,
   Building2,
   CheckCircle2,
-  Loader2,
   Plus,
   Trash2,
+  Loader2,
 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Input } from "../ui/input";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import {
+  Select,
   SelectContent,
+  SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@radix-ui/react-select";
-import { Select, SelectItem } from "../ui/select";
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  createFacility,
+  CreateFacilityReq,
+  CreateFacilitySchema,
+} from "@/api/facility";
 import { AMENITY_TYPES, FACILITY_TYPES } from "@/enums/constants";
-import { Textarea } from "../ui/textarea";
 import SportsSelector from "../club/SportsSelector";
-import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
+
+// // --- Mocking imports ---
+// // Mock schema and request type
+// const CreateFacilitySchema = z.object({
+//   name: z.string().min(1, "Name is required"),
+//   facilityType: z.string(),
+//   primarySport: z.string().optional(),
+//   capacity: z.number().min(1),
+//   description: z.string().optional(),
+//   supportedSports: z.array(z.string()).min(1, "At least one sport is required"),
+//   amenities: z.array(
+//     z.object({
+//       type: z.string(),
+//       name: z.string().min(1, "Amenity name is required"),
+//       description: z.string().optional(),
+//       additionalCost: z.number().min(0),
+//       isAvailable: z.boolean(),
+//     })
+//   ),
+// });
+
+// type CreateFacilityReq = z.infer<typeof CreateFacilitySchema>;
+
+// // Mock API function
+// const createFacility = async (
+//   clubId: number,
+//   data: CreateFacilityReq
+// ): Promise<any> => {
+//   console.log("Creating facility for club:", clubId, data);
+//   // Simulate API delay
+//   await new Promise((resolve) => setTimeout(resolve, 1500));
+//   // Simulate success
+//   return { id: 123, ...data };
+//   // Simulate error:
+//   // throw new Error("A mock API error occurred.");
+// };
+
+// Mock constants
+// const FACILITY_TYPES = [
+//   { value: "COURT", label: "Court" },
+//   { value: "FIELD", label: "Field" },
+//   { value: "POOL", label: "Pool" },
+//   { value: "GYM", label: "Gym" },
+//   { value: "OTHER", label: "Other" },
+// ];
+
+// const AMENITY_TYPES = [
+//   "CHANGING_ROOM",
+//   "LOCKER",
+//   "SHOWER",
+//   "PARKING",
+//   "CAFE",
+//   "EQUIPMENT_RENTAL",
+//   "OTHER",
+// ];
+
+// Mock SportsSelector component
+// const SportsSelector = ({
+//   value,
+//   onChange,
+//   disabled,
+// }: {
+//   value: string[];
+//   onChange: (value: string[]) => void;
+//   disabled: boolean;
+// }) => (
+//   <div className="p-4 border rounded-md bg-gray-50">
+//     <p className="font-medium text-sm mb-2">Mock Sports Selector</p>
+//     <div className="flex gap-2">
+//       <Button
+//         type="button"
+//         variant="outline"
+//         size="sm"
+//         disabled={disabled}
+//         onClick={() => onChange([...value, "Football"])}
+//       >
+//         Add Football
+//       </Button>
+//       <Button
+//         type="button"
+//         variant="outline"
+//         size="sm"
+//         disabled={disabled}
+//         onClick={() => onChange([...value, "Tennis"])}
+//       >
+//         Add Tennis
+//       </Button>
+//     </div>
+//     <p className="text-xs text-muted-foreground mt-2">
+//       Selected: {value.join(", ") || "None"}
+//     </p>
+//   </div>
+// );
+// --- End of Mocking ---
 
 interface FacilityFormProps {
   clubId: number;
@@ -92,9 +192,10 @@ export default function FacilityCreationForm({
       const response = await createFacility(clubId, data);
       setSuccess(true);
       setTimeout(() => {
-        onSuccess();
-        onClose();
-        form.reset();
+        onSuccess(); // Prop to refetch data on parent
+        onClose(); // Close the modal
+        form.reset(); // Reset form for next time
+        setSuccess(false); // Reset success state
       }, 2000);
     } catch (err: any) {
       setError(err.message || "Failed to create facility");
@@ -103,8 +204,17 @@ export default function FacilityCreationForm({
     }
   });
 
+  // Custom reset + close handler
+  const handleClose = () => {
+    if (isLoading) return; // Don't close while submitting
+    onClose();
+    form.reset();
+    setError(null);
+    setSuccess(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -176,6 +286,7 @@ export default function FacilityCreationForm({
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -261,186 +372,196 @@ export default function FacilityCreationForm({
                 )}
               />
             </div>
-          </form>
-          {/* Amenities Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">Amenities</h3>
-                <p className="text-sm text-muted-foreground">
-                  Add facilities and services available
-                </p>
-              </div>
-              <Button
-                type="button"
-                onClick={addAmenity}
-                variant="outline"
-                size="sm"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Amenity
-              </Button>
-            </div>
 
-            {fields.length === 0 && (
-              <div className="text-center py-8 border-2 border-dashed rounded-lg">
-                <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  No amenities added yet
-                </p>
+            {/* Amenities Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">Amenities</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Add facilities and services available
+                  </p>
+                </div>
                 <Button
                   type="button"
                   onClick={addAmenity}
-                  variant="link"
+                  variant="outline"
                   size="sm"
-                  className="mt-2"
+                  disabled={isLoading}
                 >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add your first amenity
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Amenity
                 </Button>
               </div>
-            )}
-            {fields.map((field, index) => (
-              <Card key={field.id} className="relative">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 h-8 w-8"
-                  onClick={() => remove(index)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+              {fields.length === 0 && (
+                <div className="text-center py-8 border-2 border-dashed rounded-lg">
+                  <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    No amenities added yet
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={addAmenity}
+                    variant="link"
+                    size="sm"
+                    className="mt-2"
+                    disabled={isLoading}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add your first amenity
+                  </Button>
+                </div>
+              )}
 
-                <CardContent className="pt-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`amenities.${index}.type`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Type *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
+              {/* --- THIS IS THE MISSING PART --- */}
+              <div className="space-y-4">
+                {fields.map((field, index) => (
+                  <Card key={field.id} className="relative">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 h-8 w-8"
+                      onClick={() => remove(index)} // <-- HERE IS THE REMOVE FUNCTION!
+                      disabled={isLoading}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                    <CardContent className="pt-6 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`amenities.${index}.type`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Type *</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                disabled={isLoading}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {AMENITY_TYPES.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                      {type.replace(/_/g, " ")}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`amenities.${index}.name`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Name *</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g., Male Changing Room"
+                                  {...field}
+                                  disabled={isLoading}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name={`amenities.${index}.description`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
+                              <Input
+                                placeholder="Brief description..."
+                                {...field}
+                                disabled={isLoading}
+                              />
                             </FormControl>
-                            <SelectContent>
-                              {AMENITY_TYPES.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type.replace(/_/g, " ")}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`amenities.${index}.additionalCost`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Additional Cost (₹)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  {...field}
+                                  disabled={isLoading}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`amenities.${index}.isAvailable`}
+                          render={({ field }) => (
+                            <FormItem className="flex items-center gap-2 pt-8">
+                              <FormControl>
+                                <input
+                                  type="checkbox"
+                                  checked={field.value}
+                                  onChange={field.onChange}
+                                  disabled={isLoading}
+                                  className="h-4 w-4"
+                                />
+                              </FormControl>
+                              <FormLabel className="!mt-0">
+                                Currently Available
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              {/* --- END OF MISSING PART --- */}
+            </div>
 
-                    <FormField
-                      control={form.control}
-                      name={`amenities.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name *</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., Male Changing Room"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name={`amenities.${index}.description`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Brief description..."
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`amenities.${index}.additionalCost`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Additional Cost (₹)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min={0}
-                              step="0.01"
-                              placeholder="0.00"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(parseFloat(e.target.value) || 0)
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`amenities.${index}.isAvailable`}
-                      render={({ field }) => (
-                        <FormItem className="flex items-center gap-2 pt-8">
-                          <FormControl>
-                            <input
-                              type="checkbox"
-                              checked={field.value}
-                              onChange={field.onChange}
-                              className="h-4 w-4"
-                            />
-                          </FormControl>
-                          <FormLabel className="!mt-0">
-                            Currently Available
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Submit Buttons */}
-          <div className="flex gap-3 justify-end pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading || success}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {success ? "Created!" : "Create Facility"}
-            </Button>
-          </div>
+            {/* Submit Buttons */}
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading || success}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {success ? "Created!" : "Create Facility"}
+              </Button>
+            </div>
+          </form>
         </Form>
       </DialogContent>
     </Dialog>
