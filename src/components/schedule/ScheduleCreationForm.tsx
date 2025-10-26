@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -36,8 +36,10 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   createSchedule,
+  updateSchedule,
   CreateScheduleRequest,
   CreateScheduleSchema,
+  Schedule,
 } from "@/api/schedule";
 import { DAYS_OF_WEEK } from "@/enums/constants";
 
@@ -47,6 +49,7 @@ interface ScheduleFormProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  schedule?: Schedule | null; // ← ADD THIS: existing schedule for update mode
 }
 
 export default function ScheduleCreationForm({
@@ -55,10 +58,14 @@ export default function ScheduleCreationForm({
   open,
   onClose,
   onSuccess,
+  schedule, // ← ADD THIS
 }: ScheduleFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Determine if we're in update mode
+  const isUpdateMode = !!schedule;
 
   const form = useForm<CreateScheduleRequest>({
     resolver: zodResolver(CreateScheduleSchema),
@@ -73,13 +80,46 @@ export default function ScheduleCreationForm({
     },
   });
 
+  // ← ADD THIS: Load existing schedule data when in update mode
+  useEffect(() => {
+    if (schedule) {
+      form.reset({
+        clubId: schedule.clubId,
+        facilityId: schedule.facilityId,
+        dayOfWeek: schedule.dayOfWeek,
+        startTime: schedule.startTime,
+        endTime: schedule.endTime,
+        slotDuration: schedule.slotDuration,
+        pricePerSlot: schedule.pricePerSlot,
+        validFrom: schedule.validFrom || undefined,
+        validUntil: schedule.validUntil || undefined,
+      });
+    } else {
+      // Reset to default values for create mode
+      form.reset({
+        clubId,
+        facilityId,
+        dayOfWeek: "MONDAY",
+        startTime: "09:00",
+        endTime: "17:00",
+        slotDuration: 60,
+        pricePerSlot: 50,
+      });
+    }
+  }, [schedule, clubId, facilityId, form]);
+
   const onSubmit = form.handleSubmit(async (data) => {
     try {
       setIsLoading(true);
       setError(null);
       setSuccess(false);
 
-      await createSchedule(data);
+      // ← ADD THIS: Call update or create based on mode
+      if (isUpdateMode && schedule) {
+        await updateSchedule(schedule.id, data);
+      } else {
+        await createSchedule(data);
+      }
 
       setSuccess(true);
       setTimeout(() => {
@@ -89,7 +129,12 @@ export default function ScheduleCreationForm({
         setSuccess(false);
       }, 2000);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create schedule");
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        `Failed to ${isUpdateMode ? "update" : "create"} schedule`;
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -109,14 +154,16 @@ export default function ScheduleCreationForm({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Create Schedule
+            {isUpdateMode ? "Update Schedule" : "Create Schedule"}
           </DialogTitle>
         </DialogHeader>
 
         {error && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Creation Failed</AlertTitle>
+            <AlertTitle>
+              {isUpdateMode ? "Update" : "Creation"} Failed
+            </AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -125,7 +172,9 @@ export default function ScheduleCreationForm({
           <Alert className="mb-4 border-green-500 bg-green-50 text-green-900">
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertTitle>Success!</AlertTitle>
-            <AlertDescription>Schedule created successfully!</AlertDescription>
+            <AlertDescription>
+              Schedule {isUpdateMode ? "updated" : "created"} successfully!
+            </AlertDescription>
           </Alert>
         )}
 
@@ -140,7 +189,7 @@ export default function ScheduleCreationForm({
                   <FormLabel>Day of Week *</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                     disabled={isLoading}
                   >
                     <FormControl>
@@ -308,7 +357,13 @@ export default function ScheduleCreationForm({
               </Button>
               <Button type="submit" disabled={isLoading || success}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {success ? "Created!" : "Create Schedule"}
+                {success
+                  ? isUpdateMode
+                    ? "Updated!"
+                    : "Created!"
+                  : isUpdateMode
+                  ? "Update Schedule"
+                  : "Create Schedule"}
               </Button>
             </div>
           </form>

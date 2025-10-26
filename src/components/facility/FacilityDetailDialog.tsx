@@ -52,7 +52,7 @@ export default function FacilityDetailDialog({
   const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
     null
-  );
+  ); // ✅ UPDATED
 
   useEffect(() => {
     if (open && facility) {
@@ -77,13 +77,35 @@ export default function FacilityDetailDialog({
     }
   };
 
-  const handleScheduleCreated = () => {
+  // ✅ NEW: Handle create schedule
+  const handleCreateSchedule = () => {
+    setSelectedSchedule(null); // Clear any selected schedule
+    setShowScheduleForm(true);
+  };
+
+  // ✅ NEW: Handle edit schedule
+  const handleEditSchedule = (schedule: Schedule) => {
+    setSelectedSchedule(schedule); // Set the schedule to edit
+    setShowScheduleForm(true);
+  };
+
+  // ✅ UPDATED: Handle form success
+  const handleScheduleSuccess = () => {
     setShowScheduleForm(false);
+    setSelectedSchedule(null); // Clear selection
     loadSchedules();
     toast({
       title: "Success!",
-      description: "Schedule created successfully",
+      description: selectedSchedule
+        ? "Schedule updated successfully"
+        : "Schedule created successfully",
     });
+  };
+
+  // ✅ UPDATED: Handle form close
+  const handleScheduleFormClose = () => {
+    setShowScheduleForm(false);
+    setSelectedSchedule(null); // Clear selection when closing
   };
 
   const handleDeleteSchedule = async (scheduleId: number) => {
@@ -228,7 +250,8 @@ export default function FacilityDetailDialog({
                     Set pricing and time slots for each day
                   </p>
                 </div>
-                <Button onClick={() => setShowScheduleForm(true)}>
+                {/* ✅ UPDATED: Use handleCreateSchedule */}
+                <Button onClick={handleCreateSchedule}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Schedule
                 </Button>
@@ -245,7 +268,8 @@ export default function FacilityDetailDialog({
                     <p className="text-muted-foreground mb-4">
                       No schedules created yet
                     </p>
-                    <Button onClick={() => setShowScheduleForm(true)}>
+                    {/* ✅ UPDATED: Use handleCreateSchedule */}
+                    <Button onClick={handleCreateSchedule}>
                       <Plus className="mr-2 h-4 w-4" />
                       Create First Schedule
                     </Button>
@@ -292,7 +316,12 @@ export default function FacilityDetailDialog({
                                 </Badge>
                               </div>
                               <div className="flex gap-2">
-                                <Button size="sm" variant="ghost">
+                                {/* ✅ UPDATED: Use handleEditSchedule */}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleEditSchedule(schedule)}
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Button>
                                 <Button
@@ -329,13 +358,14 @@ export default function FacilityDetailDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Schedule Creation Form */}
+      {/* ✅ UPDATED: Schedule Creation/Update Form */}
       <ScheduleCreationForm
         clubId={clubId}
         facilityId={facility.id}
         open={showScheduleForm}
-        onClose={() => setShowScheduleForm(false)}
-        onSuccess={handleScheduleCreated}
+        onClose={handleScheduleFormClose}
+        onSuccess={handleScheduleSuccess}
+        schedule={selectedSchedule} // ✅ Pass selected schedule for edit mode
       />
     </>
   );

@@ -9,6 +9,9 @@ import ClubDashboard from "./pages/dashboards/ClubDashboard";
 import AdminDashboard from "./pages/dashboards/AdminDashboard";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "./store/auth";
+import BrowseVenuesPage from "./pages/BrowseVenuesPage";
+import FacilityBookingPage from "./pages/FacilityBookingPage";
+import UserProfilePage from "./pages/UserProfilePage";
 
 function DashboardRedirect() {
   const { user } = useAuth();
@@ -35,9 +38,19 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+        <Route path="/browse-venues" element={<BrowseVenuesPage />} />
+        <Route path="/book/:facilityId" element={<FacilityBookingPage />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
+          <Route
+            path="/dashboard/profile"
+            element={
+              <ProtectedRoute>
+                <UserProfilePage />
+              </ProtectedRoute>
+            }
+          />
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardRedirect />} />
             <Route
