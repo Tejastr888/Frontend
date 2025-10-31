@@ -12,6 +12,7 @@ import { useAuth } from "./store/auth";
 import BrowseVenuesPage from "./pages/BrowseVenuesPage";
 import FacilityBookingPage from "./pages/FacilityBookingPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import FacilityScheduleManagementPage from "./pages/FacilityScheduleManagementPage";
 
 function DashboardRedirect() {
   const { user } = useAuth();
@@ -61,14 +62,15 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/dashboard/club"
-              element={
-                <ProtectedRoute allowedRoles={["CLUB"]}>
-                  <ClubDashboard />
-                </ProtectedRoute>
-              }
-            />
+            {/* Club Routes with role protection */}
+            <Route element={<ProtectedRoute allowedRoles={["CLUB"]} />}>
+              <Route path="/dashboard/club" element={<ClubDashboard />} />
+              {/* ✅ NEW ROUTE for Facility Schedule Management */}
+              <Route
+                path="/dashboard/club/:clubId/facility/:facilityId"
+                element={<FacilityScheduleManagementPage />}
+              />
+            </Route>
             <Route
               path="/dashboard/admin"
               element={

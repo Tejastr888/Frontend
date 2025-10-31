@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ ADD THIS
 import { useAuth } from "@/store/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,22 +23,16 @@ import ClubRegistrationForm from "@/components/club/ClubRegistrationForm";
 import { Icons } from "@/components/ui/icons";
 import { Facility, getAllFacilities } from "@/api/facility";
 import FacilityCreationForm from "@/components/facility/FacilityCreationForm";
-import FacilityDetailDialog from "@/components/facility/FacilityDetailDialog";
 
 export default function ClubDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate(); // ✅ ADD THIS
   const [club, setClub] = useState<Club | null>(null);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [loading, setLoading] = useState(true);
   const [showRegistration, setShowRegistration] = useState(false);
   const [showFacilityForm, setShowFacilityForm] = useState(false);
-
-  // New state for facility detail dialog
-  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(
-    null
-  );
-  const [showFacilityDetail, setShowFacilityDetail] = useState(false);
 
   useEffect(() => {
     loadClubData();
@@ -81,13 +76,13 @@ export default function ClubDashboard() {
     });
   };
 
-  // Handler to open facility detail
+  // ✅ UPDATED HANDLER - Navigate to facility schedule management
   const handleManageFacility = (facility: Facility) => {
-    setSelectedFacility(facility);
-    setShowFacilityDetail(true);
+    if (club) {
+      navigate(`/dashboard/club/${club.id}/facility/${facility.id}`);
+    }
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -96,7 +91,6 @@ export default function ClubDashboard() {
     );
   }
 
-  // No club registered yet
   if (!club) {
     return (
       <div className="space-y-6">
@@ -119,17 +113,14 @@ export default function ClubDashboard() {
     );
   }
 
-  // Club status pending approval
   if (club.status === "PENDING") {
     return <div>Pending Approval...</div>;
   }
 
-  // Club rejected
   if (club.status === "REJECTED") {
     return <div>Rejected...</div>;
   }
 
-  // Club approved - show full dashboard
   const activeFacilities = facilities.filter((facility) => facility.isActive);
   const totalBookings = 125;
   const totalRevenue = 54230;
@@ -284,20 +275,6 @@ export default function ClubDashboard() {
         onClose={() => setShowFacilityForm(false)}
         onSuccess={handleFacilityCreationSuccess}
       />
-
-      {/* Facility Detail Dialog (with schedules) */}
-      {selectedFacility && (
-        <FacilityDetailDialog
-          facility={selectedFacility}
-          clubId={club.id}
-          open={showFacilityDetail}
-          onClose={() => {
-            setShowFacilityDetail(false);
-            setSelectedFacility(null);
-          }}
-          onUpdate={loadClubData}
-        />
-      )}
     </div>
   );
 }

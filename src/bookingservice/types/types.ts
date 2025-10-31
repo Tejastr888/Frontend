@@ -85,6 +85,7 @@ export interface CreateSlotDto {
 }
 
 export interface ScheduleResponse {
+  slots: any;
   id: number;
   version: number;
   clubId: number;

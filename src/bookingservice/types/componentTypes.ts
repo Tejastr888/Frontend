@@ -1,3 +1,5 @@
+import { SlotGenerationMode } from "../enums/enums";
+
 export interface Slot {
   slotId: number;
   facilityId: number;
@@ -36,4 +38,49 @@ export interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (slotId: number, numberOfPeople: number) => Promise<void>;
+}
+
+export interface CreateScheduleFormData {
+  clubId: number;
+  facilityId: number;
+  maxParticipantsPerSlot: number;
+  operatingStartTime: string;
+  operatingEndTime: string;
+  slotDurationMinutes: number;
+  breakBetweenSlotsMinutes: number;
+  generationMode: SlotGenerationMode;
+  slotsPerDay?: number;
+  pricePerSlot: number;
+  validFrom: string;
+  validUntil: string;
+  description?: string;
+  slots?: ManualSlot[];
+}
+
+export interface ManualSlot {
+  slotDate: string;
+  startTime: string;
+  endTime: string;
+  maxCapacity?: number;
+  price?: number;
+}
+
+export interface Schedule {
+  id: number;
+  facilityId: number;
+  facilityName?: string;
+  maxParticipantsPerSlot: number;
+  operatingStartTime: string;
+  operatingEndTime: string;
+  slotDurationMinutes: number;
+  breakBetweenSlotsMinutes: number;
+  generationMode: "AUTO" | "MANUAL";
+  slotsPerDay?: number;
+  pricePerSlot: number;
+  validFrom: string;
+  validUntil: string;
+  isActive: boolean;
+  description?: string;
+  totalSlotsGenerated?: number;
+  createdAt: string;
 }

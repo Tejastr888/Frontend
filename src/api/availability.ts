@@ -1,6 +1,6 @@
 import axios from "axios";
 import { z } from "zod";
-import { TimeSlotSchema } from "./schedule";
+// import { TimeSlotSchema } from "./schedule";
 
 const api = axios.create({
   baseURL: "http://localhost:8083",
