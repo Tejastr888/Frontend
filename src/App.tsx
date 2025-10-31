@@ -13,6 +13,7 @@ import BrowseVenuesPage from "./pages/BrowseVenuesPage";
 import FacilityBookingPage from "./pages/FacilityBookingPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import FacilityScheduleManagementPage from "./pages/FacilityScheduleManagementPage";
+import ScheduleSlotManagementPage from "./pages/ScheduleSlotManagementPage";
 
 function DashboardRedirect() {
   const { user } = useAuth();
@@ -69,6 +70,10 @@ export default function App() {
               <Route
                 path="/dashboard/club/:clubId/facility/:facilityId"
                 element={<FacilityScheduleManagementPage />}
+              />
+              <Route
+                path="/dashboard/club/schedule/:scheduleId/slots"
+                element={<ScheduleSlotManagementPage />}
               />
             </Route>
             <Route

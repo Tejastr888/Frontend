@@ -178,6 +178,7 @@ import {
   CreateBookingRequest,
   CreateScheduleRequest,
   ScheduleResponse,
+  Slot,
 } from "../types/types";
 import { Schedule } from "@/bookingservice/types/componentTypes"; // Assuming Schedule is a similar type to ScheduleResponse
 
@@ -342,6 +343,47 @@ class BookingApi {
   async deactivateSchedule(scheduleId: number): Promise<void> {
     return this.handleRequest<void>(
       this.axiosInstance.post(`/api/schedules/${scheduleId}/deactivate`)
+    );
+  }
+
+  // ===== SLOTS (Admin/Management) =====
+
+  /**
+   * Retrieves all slots (active and inactive) for a specific schedule on a given date.
+   * Corresponds to: GET /api/v1/slots/schedule/{scheduleId}/date/{date}
+   * This is used by the Slot Management Page to display slots for a selected day.
+   * * @param scheduleId The ID of the schedule.
+   * @param date The date string (YYYY-MM-DD).
+   * @returns A list of Slot DTOs.
+   */
+  async getScheduleSlots(
+    scheduleId: number,
+    date: string // format: YYYY-MM-DD
+  ): Promise<Slot[]> {
+    return this.handleRequest<Slot[]>(
+      this.axiosInstance.get(
+        `/api/v1/slots/schedule/${scheduleId}/date/${date}`
+      )
+    );
+  }
+
+  /**
+   * Retrieves all active slots for a given schedule ID.
+   * Corresponds to: GET /api/v1/slots/schedule/{scheduleId}
+   * * @param scheduleId The ID of the schedule.
+   * @returns A list of active Slot DTOs.
+   */
+  async getAllActiveSlotsBySchedule(scheduleId: number): Promise<Slot[]> {
+    return this.handleRequest<Slot[]>(
+      this.axiosInstance.get(`/api/v1/slots/schedule/${scheduleId}`)
+    );
+  }
+
+  // Note: Also update the Schedule detail method to return the full Schedule type
+  async getScheduleDetails(scheduleId: number): Promise<Schedule> {
+    // Assuming ScheduleResponse is interchangeable with the Schedule type used in your components
+    return this.handleRequest<Schedule>(
+      this.axiosInstance.get(`/api/schedules/${scheduleId}`)
     );
   }
 }

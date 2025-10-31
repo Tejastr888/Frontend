@@ -11,11 +11,12 @@ import {
 import { useEffect, useState } from "react";
 import { CreateScheduleForm } from "./CreateScheduleForm";
 import { bookingApi } from "@/bookingservice/api/api";
+import { Facility } from "@/api/facility";
 
 export const ScheduleList: React.FC<{
   clubId: number;
-  facilities: Array<{ id: number; name: string }>;
-}> = ({ clubId, facilities }) => {
+  facility: Facility;
+}> = ({ clubId, facility }) => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -128,8 +129,7 @@ export const ScheduleList: React.FC<{
                 <div>
                   <div className="flex items-center gap-3">
                     <h3 className="text-lg font-semibold text-gray-900">
-                      {facilities.find((f) => f.id === schedule.facilityId)
-                        ?.name || "Facility"}
+                      {facility.name || "Facility"}
                     </h3>
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -208,7 +208,7 @@ export const ScheduleList: React.FC<{
           onClose={() => setShowCreateForm(false)}
           onSuccess={fetchSchedules}
           clubId={clubId}
-          facilities={facilities}
+          facility={facility}
         />
       )}
     </div>

@@ -6,6 +6,7 @@ import { bookingApi } from "@/bookingservice/api/api";
 import { ScheduleCard } from "./ScheduleCard";
 import { useToast } from "@/components/ui/use-toast";
 import { Facility } from "@/api/facility";
+import { useNavigate } from "react-router-dom";
 
 interface ClubScheduleListProps {
   clubId: number;
@@ -28,6 +29,7 @@ export const ClubScheduleList: React.FC<ClubScheduleListProps> = ({
   title,
   description,
 }) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +38,13 @@ export const ClubScheduleList: React.FC<ClubScheduleListProps> = ({
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
     null
   );
+
+  const handleViewSlots = (schedule: Schedule) => {
+    // Navigate to the Slot Management Page
+    navigate(`/dashboard/club/schedule/${schedule.id}/slots`, {
+      state: { schedule: schedule }, // Pass the full schedule object via state
+    });
+  };
 
   // ✅ Fetch schedules based on whether it's facility-specific or club-wide
   const fetchSchedules = async () => {
@@ -237,14 +246,27 @@ export const ClubScheduleList: React.FC<ClubScheduleListProps> = ({
           {filteredSchedules.map((schedule) => {
             const facilityName = getFacilityName(schedule);
             return (
-              <ScheduleCard
+              <div
                 key={schedule.id}
-                schedule={schedule}
-                facilityName={facilityName}
-                onToggleStatus={toggleScheduleStatus}
-                onEdit={handleEditSchedule}
-                onDelete={handleDeleteSchedule}
-              />
+                className="cursor-pointer"
+                onClick={() => handleViewSlots(schedule)}
+              >
+                <ScheduleCard
+                  schedule={schedule}
+                  facilityName={facilityName}
+                  onToggleStatus={toggleScheduleStatus}
+                  onEdit={(e, schedule) => {
+                    // ✅ Receive event
+                    e.stopPropagation(); // Redundant but safe
+                    handleEditSchedule(schedule);
+                  }}
+                  onDelete={(e, scheduleId) => {
+                    // ✅ Receive event
+                    e.stopPropagation(); // Redundant but safe
+                    handleDeleteSchedule(scheduleId);
+                  }}
+                />
+              </div>
             );
           })}
         </div>

@@ -1,15 +1,15 @@
 // src/bookingservice/components/schedule/ScheduleCard.tsx
 
 import React from "react";
-import { Schedule } from "@/bookingservice/types/componentTypes"; // Assuming you update componentTypes
+import { Schedule } from "@/bookingservice/types/componentTypes";
 import { Clock, DollarSign, Users, Calendar, Edit, Trash2 } from "lucide-react";
 
 interface ScheduleCardProps {
   schedule: Schedule;
   facilityName: string;
   onToggleStatus: (scheduleId: number, isActive: boolean) => void;
-  onEdit: (schedule: Schedule) => void;
-  onDelete: (scheduleId: number) => void;
+  onEdit: (e: React.MouseEvent, schedule: Schedule) => void; // ✅ Add event param
+  onDelete: (e: React.MouseEvent, scheduleId: number) => void; // ✅ Add event param
 }
 
 export const ScheduleCard: React.FC<ScheduleCardProps> = ({
@@ -50,15 +50,21 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
         <div className="flex items-center gap-2">
           {/* Edit Button */}
           <button
-            onClick={() => onEdit(schedule)}
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ Stop here
+              onEdit(e, schedule); // ✅ Pass event
+            }}
             className="p-1.5 rounded-lg text-sm font-medium transition-colors text-blue-600 hover:bg-blue-50"
             title="Edit Schedule"
           >
             <Edit className="w-5 h-5" />
           </button>
-          {/* Delete Button (using deactivate for simplicity) */}
+          {/* Delete Button */}
           <button
-            onClick={() => onDelete(schedule.id)}
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ Stop here
+              onDelete(e, schedule.id); // ✅ Pass event
+            }}
             className="p-1.5 rounded-lg text-sm font-medium transition-colors text-red-600 hover:bg-red-50"
             title="Delete Schedule"
           >
@@ -66,7 +72,10 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
           </button>
           {/* Activate/Deactivate Toggle */}
           <button
-            onClick={() => onToggleStatus(schedule.id, schedule.isActive)}
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ Stop propagation for toggle too
+              onToggleStatus(schedule.id, schedule.isActive);
+            }}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               schedule.isActive
                 ? "bg-red-50 text-red-700 hover:bg-red-100"
