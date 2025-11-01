@@ -117,6 +117,7 @@ export interface ScheduleResponse {
  * booking status and pricing information.
  */
 export interface Slot {
+  id: number;
   slotId: number; // Corresponds to SlotResponse.id
   facilityId: number;
   facilityName?: string; // Often denormalized or looked up in the UI
@@ -129,6 +130,25 @@ export interface Slot {
   bookedCount: number; // Corresponds to SlotResponse.currentBookings
   isFull: boolean; // Corresponds to SlotResponse.isFull
   price: number; // Corresponds to SlotResponse.price (BigDecimal in Java, converted to number/string)
+  isActive: boolean;
   isBookable: boolean; // Corresponds to SlotResponse.isBookable
   unavailableReason?: string; // Optional field for user-friendly explanation (e.g., "Fully booked", "Schedule Inactive")
+}
+
+export interface FailedUpdate {
+  slotId: number;
+  message: string;
+}
+export interface SlotUpdateRequest {
+  slotId: number;
+  startTime?: string;
+  endTime?: string;
+  maxCapacity?: number;
+  price?: number;
+  isActive?: boolean;
+}
+
+export interface BulkUpdateResponse {
+  successfulUpdates: Slot[];
+  failedUpdates: FailedUpdate[];
 }

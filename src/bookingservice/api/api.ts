@@ -173,12 +173,14 @@ import { BookingStatus } from "../enums/enums";
 import {
   AvailableSlot,
   BookingResponse,
+  BulkUpdateResponse,
   CancelBookingRequest,
   ConfirmBookingRequest,
   CreateBookingRequest,
   CreateScheduleRequest,
   ScheduleResponse,
   Slot,
+  SlotUpdateRequest,
 } from "../types/types";
 import { Schedule } from "@/bookingservice/types/componentTypes"; // Assuming Schedule is a similar type to ScheduleResponse
 
@@ -384,6 +386,12 @@ class BookingApi {
     // Assuming ScheduleResponse is interchangeable with the Schedule type used in your components
     return this.handleRequest<Schedule>(
       this.axiosInstance.get(`/api/schedules/${scheduleId}`)
+    );
+  }
+  async updateSlots(updates: SlotUpdateRequest[]): Promise<BulkUpdateResponse> {
+    console.log(updates, "updateeeeeeeeeee");
+    return this.handleRequest<BulkUpdateResponse>(
+      this.axiosInstance.put("/api/v1/slots/update", updates)
     );
   }
 }

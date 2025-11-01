@@ -72,7 +72,7 @@ export default function App() {
                 element={<FacilityScheduleManagementPage />}
               />
               <Route
-                path="/dashboard/club/schedule/:scheduleId/slots"
+                path="/dashboard/club/:clubId/schedule/:scheduleId/slots"
                 element={<ScheduleSlotManagementPage />}
               />
             </Route>

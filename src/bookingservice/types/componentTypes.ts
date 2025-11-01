@@ -1,21 +1,23 @@
 import { SlotGenerationMode } from "../enums/enums";
+import { Slot } from "./types";
 
-export interface Slot {
-  slotId: number;
-  facilityId: number;
-  facilityName?: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  duration: string;
-  maxCapacity: number;
-  availableSpots: number;
-  bookedCount: number;
-  isFull: boolean;
-  price: number;
-  isBookable: boolean;
-  unavailableReason?: string;
-}
+// export interface Slot {
+//   slotId: number;
+//   facilityId: number;
+//   facilityName?: string;
+//   date: string;
+//   startTime: string;
+//   endTime: string;
+//   duration: string;
+//   maxCapacity: number;
+//   availableSpots: number;
+//   bookedCount: number;
+//   isFull: boolean;
+//   price: number;
+//   isActive: boolean;
+//   isBookable: boolean;
+//   unavailableReason?: string;
+// }
 
 export interface SlotCardProps {
   slot: Slot;

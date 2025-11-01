@@ -41,7 +41,7 @@ export const ClubScheduleList: React.FC<ClubScheduleListProps> = ({
 
   const handleViewSlots = (schedule: Schedule) => {
     // Navigate to the Slot Management Page
-    navigate(`/dashboard/club/schedule/${schedule.id}/slots`, {
+    navigate(`/dashboard/club/${clubId}/schedule/${schedule.id}/slots`, {
       state: { schedule: schedule }, // Pass the full schedule object via state
     });
   };

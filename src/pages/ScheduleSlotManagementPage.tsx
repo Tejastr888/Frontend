@@ -1,28 +1,29 @@
-// src/pages/ScheduleSlotManagementPage.tsx
-
 import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { Calendar as CalendarIcon, Loader2, ArrowLeft } from "lucide-react";
-import { format, subDays, startOfDay } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { bookingApi } from "@/bookingservice/api/api";
 import { Schedule, Slot } from "@/bookingservice/types/componentTypes";
-import { SlotGrid } from "@/bookingservice/components/booking/SlotGrid"; // Your provided component
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar"; // Assuming a Shadcn Calendar component
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import {
+  BulkUpdateResponse,
+  SlotUpdateRequest,
+} from "@/bookingservice/types/types";
+import { SlotGridWithEditing } from "@/bookingservice/components/schedule/SlotGridWithEditing";
 
-// A minimal interface to pass Schedule details via route state
 interface LocationState {
   schedule: Schedule;
 }
 
 export default function ScheduleSlotManagementPage() {
-  // Read scheduleId from URL params (assuming the new route is /schedules/:scheduleId/slots)
-  const { scheduleId } = useParams<{ scheduleId: string }>();
+  const { scheduleId, clubId } = useParams<{
+    scheduleId: string;
+    clubId: string;
+  }>();
   const location = useLocation();
-
-  // Read schedule details from navigation state for initial display
   const initialSchedule = (location.state as LocationState)?.schedule;
 
   const currentScheduleId = parseInt(scheduleId || "0");
@@ -39,25 +40,51 @@ export default function ScheduleSlotManagementPage() {
   const [loadingSchedule, setLoadingSchedule] = useState(!initialSchedule);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
-  // Placeholder function for slot editing (You would implement this in detail later)
-  const handleSlotEdit = (slot: Slot) => {
-    // Here you would typically open a modal or form to edit the slot details (e.g., price, capacity)
-    toast({
-      title: "Edit Slot",
-      description: `Editing slot ${slot.slotId} on ${format(
-        selectedDate,
-        "PPP"
-      )}`,
-    });
-    console.log("Edit Slot:", slot);
+  // ✅ NEW: Bulk update handler
+  const handleBulkUpdate = async (
+    updates: SlotUpdateRequest[]
+  ): Promise<BulkUpdateResponse> => {
+    try {
+      const result = await bookingApi.updateSlots(updates);
+
+      // ✅ Re-fetch slots to show updated data
+      await fetchSlots(selectedDate);
+
+      // ✅ Show success toast
+      if (result.successfulUpdates.length > 0) {
+        toast({
+          title: "Success!",
+          description: `${result.successfulUpdates.length} slot(s) updated successfully`,
+        });
+      }
+
+      // ✅ Show warning if some failed
+      if (result.failedUpdates.length > 0) {
+        toast({
+          variant: "destructive",
+          title: "Partial Success",
+          description: `${result.failedUpdates.length} slot(s) failed to update`,
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Bulk update failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update slots. Please try again.",
+      });
+      throw error;
+    }
   };
 
-  // Fallback: Fetch full Schedule object if not passed via state (e.g., direct URL access)
+  // Fallback: Fetch schedule if not passed via state
   const fetchScheduleDetails = async () => {
     if (currentScheduleId) {
       try {
         setLoadingSchedule(true);
-        const data = await bookingApi.getScheduleById(currentScheduleId); // Assuming a new API call
+        const data = await bookingApi.getScheduleById(currentScheduleId);
         setSchedule(data);
       } catch (error) {
         console.error("Failed to fetch schedule details:", error);
@@ -79,7 +106,6 @@ export default function ScheduleSlotManagementPage() {
     try {
       setLoadingSlots(true);
       const dateString = format(date, "yyyy-MM-dd");
-      // Assuming an API call to get slots for a specific schedule and date
       const data = await bookingApi.getScheduleSlots(
         currentScheduleId,
         dateString
@@ -98,14 +124,14 @@ export default function ScheduleSlotManagementPage() {
     }
   };
 
-  // Initial load and dependency on schedule ID
+  // Initial load
   useEffect(() => {
     if (!initialSchedule) {
       fetchScheduleDetails();
     }
   }, [currentScheduleId]);
 
-  // Fetch slots whenever the selected date changes
+  // Fetch slots when date changes
   useEffect(() => {
     fetchSlots(selectedDate);
   }, [selectedDate, currentScheduleId]);
@@ -121,7 +147,7 @@ export default function ScheduleSlotManagementPage() {
     );
   }
 
-  // Calculate the valid range for the calendar
+  // Calculate valid date range
   const validFromDate = new Date(schedule.validFrom);
   const validUntilDate = new Date(schedule.validUntil);
   const today = startOfDay(new Date());
@@ -131,7 +157,7 @@ export default function ScheduleSlotManagementPage() {
       {/* Header */}
       <div className="flex items-center space-x-4 mb-8">
         <Link
-          to={`/dashboard/club/facility/${schedule.facilityId}/schedules`}
+          to={`/dashboard/club/${clubId}/facility/${schedule.facilityId}`}
           className="text-gray-500 hover:text-gray-800"
         >
           <ArrowLeft className="h-6 w-6" />
@@ -145,8 +171,6 @@ export default function ScheduleSlotManagementPage() {
             {schedule.validUntil})
           </p>
         </div>
-        {/* Optional: Button for bulk operations */}
-        <Button variant="outline">Bulk Slot Actions</Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -157,18 +181,15 @@ export default function ScheduleSlotManagementPage() {
               <CardTitle className="text-lg">Select Date</CardTitle>
             </CardHeader>
             <CardContent className="flex justify-center">
-              {/* Calendar component for date selection */}
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => {
                   if (date) setSelectedDate(startOfDay(date));
                 }}
-                // Restrict dates based on schedule validity and future dates
                 disabled={(date) =>
                   date < today || date < validFromDate || date > validUntilDate
                 }
-                initialFocus
               />
             </CardContent>
           </Card>
@@ -203,18 +224,30 @@ export default function ScheduleSlotManagementPage() {
               </p>
             </CardContent>
           </Card>
+
+          {/* Instructions Card */}
+          <Card className="bg-blue-50 border-blue-200">
+            <CardContent className="pt-6">
+              <p className="text-sm text-blue-900">
+                <strong>💡 Tip:</strong> Click any slot to edit its details.
+                Changes are queued until you click "Save Changes".
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Right Column: Slot Grid */}
+        {/* Right Column: Slot Grid with Editing */}
         <div className="lg:col-span-3">
           <h2 className="text-2xl font-semibold mb-6">
             Slots for {format(selectedDate, "EEEE, MMMM do, yyyy")}
           </h2>
-          <SlotGrid
+
+          {/* ✅ REPLACED: SlotGrid → SlotGridWithEditing */}
+          <SlotGridWithEditing
             slots={slots}
-            mode="edit" // Club management mode
+            mode="edit"
             loading={loadingSlots}
-            onSlotSelect={handleSlotEdit} // Use the edit handler
+            onBulkUpdate={handleBulkUpdate}
           />
         </div>
       </div>
