@@ -101,6 +101,20 @@ export type SportOption = z.infer<typeof SportOptionSchema>;
 // ============= API FUNCTIONS =============
 
 // Club Management
+
+// ✅ Get all approved clubs
+export const getAllClubs = async (): Promise<Club[]> => {
+  const response = await api.get("/api/clubs");
+  return z.array(ClubSchema).parse(response.data);
+};
+
+// ✅ Get club by ID (PUBLIC - no auth required)
+export const getClubById = async (clubId: number): Promise<Club> => {
+  const response = await api.get(`/api/clubs/${clubId}`);
+  return ClubSchema.parse(response.data);
+};
+
+// ✅ Get my club (CLUB role required)
 export const getMyClub = async (): Promise<Club | null> => {
   try {
     const response = await api.get("/api/clubs/my-club");
@@ -114,6 +128,7 @@ export const getMyClub = async (): Promise<Club | null> => {
   }
 };
 
+// ✅ Create a new club
 export const createClub = async (data: CreateClubRequest): Promise<Club> => {
   const requestPayload = {
     name: data.name,
@@ -138,6 +153,7 @@ export const createClub = async (data: CreateClubRequest): Promise<Club> => {
   return ClubSchema.parse(response.data);
 };
 
+// ✅ Update my club
 export const updateMyClub = async (
   data: Partial<CreateClubRequest>
 ): Promise<Club> => {
@@ -145,16 +161,20 @@ export const updateMyClub = async (
   return ClubSchema.parse(response.data);
 };
 
+// ✅ Delete my club
 export const deleteMyClub = async (): Promise<void> => {
   await api.delete("/api/clubs/my-club");
 };
 
-// Sports Management
+// ============= CLUB SPORTS MANAGEMENT =============
+
+// ✅ Get my club sports
 export const getMyClubSports = async (): Promise<SportOption[]> => {
   const response = await api.get("/api/clubs/my-club/sports");
   return z.array(SportOptionSchema).parse(response.data);
 };
 
+// ✅ Add sport to my club
 export const addSportToMyClub = async (
   data: CreateSportRequest
 ): Promise<Sport> => {
@@ -162,6 +182,7 @@ export const addSportToMyClub = async (
   return SportSchema.parse(response.data);
 };
 
+// ✅ Update my club sport
 export const updateMyClubSport = async (
   id: number,
   data: Partial<CreateSportRequest>
@@ -170,17 +191,20 @@ export const updateMyClubSport = async (
   return SportSchema.parse(response.data);
 };
 
+// ✅ Remove sport from my club
 export const removeMyClubSport = async (id: number): Promise<void> => {
   await api.delete(`/api/clubs/my-club/sports/${id}`);
 };
 
-// Get all available sports (for dropdown)
+// ============= SPORTS MANAGEMENT =============
+
+// ✅ Get all available sports (for dropdown)
 export const getAllSportsOptions = async (): Promise<SportOption[]> => {
   const response = await api.get(`/api/sports`);
   return z.array(SportOptionSchema).parse(response.data);
 };
 
-// Get sports by category
+// ✅ Get sports by category
 export const getSportsByCategory = async (
   category: string
 ): Promise<SportOption[]> => {

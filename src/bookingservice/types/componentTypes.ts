@@ -36,10 +36,10 @@ export interface SlotGridProps {
 }
 
 export interface BookingModalProps {
-  slot: Slot | null;
+  slot: any | null;
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (slotId: number, numberOfPeople: number) => Promise<void>;
+  onConfirm: (slotId: number, numberOfPeople: number) => Promise<any>;
 }
 
 export interface CreateScheduleFormData {

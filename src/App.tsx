@@ -14,6 +14,7 @@ import FacilityBookingPage from "./pages/FacilityBookingPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import FacilityScheduleManagementPage from "./pages/FacilityScheduleManagementPage";
 import ScheduleSlotManagementPage from "./pages/ScheduleSlotManagementPage";
+import BookingDetailsPage from "./pages/BookingDetailsPage";
 
 function DashboardRedirect() {
   const { user } = useAuth();
@@ -60,6 +61,15 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={["USER"]}>
                   <UserDashboard />
+                </ProtectedRoute>
+              }
+            />
+            {/* ✅ BOOKING DETAILS ROUTE - Add here */}
+            <Route
+              path="/bookings/:bookingId"
+              element={
+                <ProtectedRoute allowedRoles={["USER"]}>
+                  <BookingDetailsPage />
                 </ProtectedRoute>
               }
             />

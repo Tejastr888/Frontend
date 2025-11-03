@@ -3,7 +3,6 @@ import { SlotGenerationMode } from "@/bookingservice/enums/enums";
 import {
   CreateScheduleFormData,
   ManualSlot,
-  Slot,
 } from "@/bookingservice/types/componentTypes";
 import {
   AlertCircle,
@@ -16,6 +15,7 @@ import {
 import { useState } from "react";
 import { SlotGrid } from "../booking/SlotGrid";
 import { Facility } from "@/api/facility";
+import { Slot } from "@/bookingservice/types/types";
 
 export const CreateScheduleForm: React.FC<{
   onClose: () => void;

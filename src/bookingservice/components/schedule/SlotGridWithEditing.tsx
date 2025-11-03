@@ -62,9 +62,7 @@ export const SlotGridWithEditing = ({
       if (results.successfulUpdates.length > 0) {
         setEditedSlots((prev) => {
           const newMap = new Map(prev);
-          results.successfulUpdates.forEach((slot) =>
-            newMap.delete(slot.slotId)
-          );
+          results.successfulUpdates.forEach((slot) => newMap.delete(slot.id));
           return newMap;
         });
       }
@@ -84,7 +82,7 @@ export const SlotGridWithEditing = ({
   const isSlotEdited = (slotId: number) => editedSlots.has(slotId);
 
   const getSlotWithEdits = (slot: Slot): Slot => {
-    const edits = editedSlots.get(slot.slotId);
+    const edits = editedSlots.get(slot.id);
     if (!edits) return slot;
 
     return {

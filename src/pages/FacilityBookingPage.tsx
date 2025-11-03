@@ -7,7 +7,9 @@ import {
   Users,
   Award,
   CheckCircle2,
+  Calendar as CalendarIcon,
 } from "lucide-react";
+import { format, startOfDay, addDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,46 +19,148 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import BookingFlow from "@/components/booking/BookingFlow";
+import { Calendar } from "@/components/ui/calendar";
 import { PublicFacility, getFacilityById } from "@/api/public";
 import { Icons } from "@/components/ui/icons";
+import { SlotGrid } from "@/bookingservice/components/booking/SlotGrid";
+import { BookingModal } from "@/bookingservice/components/booking/BookingModal";
+import { bookingApi } from "@/bookingservice/api/api";
+import { Slot } from "@/bookingservice/types/types";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function FacilityBookingPage() {
   const { facilityId } = useParams<{ facilityId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
+  // Facility State
   const [facility, setFacility] = useState<PublicFacility | null>(
     location.state?.facility || null
   );
-  const [loading, setLoading] = useState(!facility);
+  const [loadingFacility, setLoadingFacility] = useState(!facility);
 
+  // Booking State
+  const [selectedDate, setSelectedDate] = useState<Date>(
+    startOfDay(new Date())
+  );
+  const [slots, setSlots] = useState<any[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+
+  // Load facility details
   useEffect(() => {
     if (!facility && facilityId) {
       loadFacility();
     }
   }, [facilityId]);
 
+  // Load slots when date changes
+  useEffect(() => {
+    if (facility) {
+      loadSlots(selectedDate);
+    }
+  }, [selectedDate, facility]);
+
   const loadFacility = async () => {
     if (!facilityId) return;
 
     try {
-      setLoading(true);
+      setLoadingFacility(true);
       const data = await getFacilityById(parseInt(facilityId));
       setFacility(data);
     } catch (error) {
       console.error("Failed to load facility:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load facility details",
+      });
       navigate("/browse-venues");
     } finally {
-      setLoading(false);
+      setLoadingFacility(false);
     }
   };
 
-  const handleBookingComplete = () => {
-    navigate("/dashboard/user");
+  const loadSlots = async (date: Date) => {
+    if (!facility) return;
+
+    try {
+      setLoadingSlots(true);
+      const dateString = format(date, "yyyy-MM-dd");
+
+      // Fetch available slots for the selected date
+      const data = await bookingApi.getAvailableSlots(facility.id, dateString);
+
+      setSlots(data);
+    } catch (error) {
+      console.error("Failed to load slots:", error);
+      setSlots([]);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load available slots",
+      });
+    } finally {
+      setLoadingSlots(false);
+    }
   };
 
-  if (loading) {
+  const handleSlotSelect = (slot: Slot) => {
+    setSelectedSlot(slot);
+    setShowBookingModal(true);
+  };
+
+  const handleConfirmBooking = async (
+    slotId: number,
+    numberOfPeople: number
+  ) => {
+    try {
+      // Step 1: Reserve the slot
+      const reservation = await bookingApi.reserveSlot({
+        slotId,
+        numberOfPeople,
+      });
+
+      toast({
+        title: "Slot Reserved!",
+        description: `You have ${reservation.minutesUntilExpiry} minutes to complete payment`,
+      });
+
+      // Step 2: In a real app, you'd integrate payment gateway here
+      // For now, we'll simulate payment and confirm immediately
+
+      // Simulate payment processing
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Step 3: Confirm the booking after "payment"
+      const confirmedBooking = await bookingApi.confirmBooking(reservation.id, {
+        paymentTransactionId: `mock_pay_${Date.now()}`,
+        paymentMethod: "CARD",
+      });
+
+      toast({
+        title: "Booking Confirmed!",
+        description: "Your slot has been successfully booked",
+      });
+
+      // Refresh slots to show updated availability
+      await loadSlots(selectedDate);
+
+      // Navigate to user dashboard
+      setTimeout(() => {
+        navigate("/dashboard/user");
+      }, 1500);
+
+      return confirmedBooking;
+    } catch (error) {
+      console.error("Booking failed:", error);
+      throw error;
+    }
+  };
+
+  if (loadingFacility) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Icons.spinner className="h-10 w-10 animate-spin text-primary" />
@@ -210,16 +314,63 @@ export default function FacilityBookingPage() {
         </CardContent>
       </Card>
 
-      {/* Booking Flow */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Select Date & Time</h2>
-        <BookingFlow
-          clubId={facility.clubId}
-          facilityId={facility.id}
-          facilityName={facility.name}
-          onComplete={handleBookingComplete}
-        />
+      {/* Booking Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Date Picker */}
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5" />
+              Select Date
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => {
+                if (date) setSelectedDate(startOfDay(date));
+              }}
+              disabled={(date) => date < startOfDay(new Date())}
+              className="rounded-md border"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Slots Grid */}
+        <div className="lg:col-span-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">
+                Available Slots - {format(selectedDate, "EEEE, MMMM do, yyyy")}
+              </CardTitle>
+              <CardDescription>
+                Select a time slot to book your session
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SlotGrid
+                slots={slots}
+                mode="book"
+                loading={loadingSlots}
+                onSlotSelect={handleSlotSelect}
+                selectedSlotId={selectedSlot?.slotId}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* Booking Modal */}
+      <BookingModal
+        slot={selectedSlot}
+        isOpen={showBookingModal}
+        onClose={() => {
+          setShowBookingModal(false);
+          setSelectedSlot(null);
+        }}
+        onConfirm={handleConfirmBooking}
+      />
     </div>
   );
 }

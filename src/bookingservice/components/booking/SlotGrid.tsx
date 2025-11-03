@@ -1,5 +1,5 @@
 import { Calendar, Loader2 } from "lucide-react";
-import {SlotGridProps } from "../../types/componentTypes";
+import { SlotGridProps } from "../../types/componentTypes";
 import { SlotCard } from "./SlotCard";
 import { Slot } from "@/bookingservice/types/types";
 

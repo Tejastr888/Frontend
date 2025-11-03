@@ -118,7 +118,7 @@ export interface ScheduleResponse {
  */
 export interface Slot {
   id: number;
-  slotId: number; // Corresponds to SlotResponse.id
+  slotId?: number; // Corresponds to SlotResponse.id
   facilityId: number;
   facilityName?: string; // Often denormalized or looked up in the UI
   date: string; // Corresponds to SlotResponse.slotDate (e.g., "2025-10-31")

@@ -40,6 +40,7 @@ export const BOOKING_STATUS_COLORS = {
   CANCELLED: "bg-red-100 text-red-800",
   COMPLETED: "bg-blue-100 text-blue-800",
   NO_SHOW: "bg-gray-100 text-gray-800",
+  REFUNDED: "bg-gray-100 text-gray-800",
 };
 
 export const BOOKING_STATUS_LABELS = {
@@ -48,4 +49,5 @@ export const BOOKING_STATUS_LABELS = {
   CANCELLED: "Cancelled",
   COMPLETED: "Completed",
   NO_SHOW: "No Show",
+  REFUNDED: "Refunded",
 };

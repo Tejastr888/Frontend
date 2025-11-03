@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Slot } from "../../types/componentTypes";
+import { Slot } from "@/bookingservice/types/types";
 import { SlotGrid } from "./SlotGrid";
 import { BookingModal } from "./BookingModal";
 
@@ -12,7 +12,7 @@ export default function BookingDemo() {
   // Sample data
   const sampleSlots: Slot[] = [
     {
-      slotId: 1,
+      id: 1,
       facilityId: 1,
       facilityName: "Swimming Pool A",
       date: "2025-11-01",
@@ -23,11 +23,12 @@ export default function BookingDemo() {
       availableSpots: 15,
       bookedCount: 5,
       isFull: false,
+      isActive: true,
       price: 500,
       isBookable: true,
     },
     {
-      slotId: 2,
+      id: 2,
       facilityId: 1,
       date: "2025-11-01",
       startTime: "07:00",
@@ -37,11 +38,12 @@ export default function BookingDemo() {
       availableSpots: 2,
       bookedCount: 18,
       isFull: false,
+      isActive: true,
       price: 500,
       isBookable: true,
     },
     {
-      slotId: 3,
+      id: 3,
       facilityId: 1,
       date: "2025-11-01",
       startTime: "08:00",
@@ -51,12 +53,13 @@ export default function BookingDemo() {
       availableSpots: 0,
       bookedCount: 20,
       isFull: true,
+      isActive: true,
       price: 500,
       isBookable: false,
       unavailableReason: "Fully booked",
     },
     {
-      slotId: 4,
+      id: 4,
       facilityId: 1,
       date: "2025-11-01",
       startTime: "14:00",
@@ -65,12 +68,13 @@ export default function BookingDemo() {
       maxCapacity: 20,
       availableSpots: 20,
       bookedCount: 0,
+      isActive: true,
       isFull: false,
       price: 500,
       isBookable: true,
     },
     {
-      slotId: 5,
+      id: 5,
       facilityId: 1,
       date: "2025-11-01",
       startTime: "18:00",
@@ -79,6 +83,7 @@ export default function BookingDemo() {
       maxCapacity: 20,
       availableSpots: 12,
       bookedCount: 8,
+      isActive: true,
       isFull: false,
       price: 600,
       isBookable: true,

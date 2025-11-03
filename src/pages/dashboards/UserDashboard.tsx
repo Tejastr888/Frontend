@@ -10,18 +10,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar, MapPin, Search, User, Clock } from "lucide-react";
-import { getUserBookings, Booking } from "@/api/booking";
+
 import {
   BOOKING_STATUS_COLORS,
   BOOKING_STATUS_LABELS,
 } from "@/enums/constants";
 import { format } from "date-fns";
 import { Icons } from "@/components/ui/icons";
+import { BookingResponse } from "@/bookingservice/types/types";
+import { bookingApi } from "@/bookingservice/api/api";
+
 
 export default function UserDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export default function UserDashboard() {
 
     try {
       setLoading(true);
-      const data = await getUserBookings(user.userId);
+      const data = await bookingApi.getMyBookings();
       setBookings(data);
     } catch (error) {
       console.error("Failed to load bookings:", error);
