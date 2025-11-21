@@ -1,8 +1,11 @@
 import axios from "axios";
 import { z } from "zod";
 
+const AUTH_SERVICE_URL =
+  import.meta.env.VITE_AUTH_SERVICE_URL || "http://localhost:8081";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || "http://localhost:8080",
+  baseURL: AUTH_SERVICE_URL,
   headers: {
     "Content-Type": "application/json",
   },
