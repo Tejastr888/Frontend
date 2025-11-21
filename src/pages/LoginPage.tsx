@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { loginUser } from "@/api/auth";
+import { AUTH_SERVICE_URL, loginUser } from "@/api/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { Icons } from "@/components/ui/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -72,9 +72,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     // TODO: Implement Google OAuth login
-    window.location.href = `${
-      import.meta.env.VITE_API_BASE
-    }/oauth2/authorization/google`;
+    window.location.href = `${AUTH_SERVICE_URL}/oauth2/authorization/google`;
   };
 
   return (

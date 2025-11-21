@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { registerUser } from "@/api/auth";
+import { AUTH_SERVICE_URL, registerUser } from "@/api/auth";
 import { Icons } from "@/components/ui/icons";
 import { useToast } from "@/components/ui/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -181,9 +181,7 @@ export default function RegisterPage() {
             type="button"
             disabled={isLoading}
             onClick={() => {
-              window.location.href = `${
-                import.meta.env.VITE_API_BASE
-              }/oauth2/authorization/google`;
+              window.location.href = `${AUTH_SERVICE_URL}/oauth2/authorization/google`;
             }}
             className="w-full"
           >
