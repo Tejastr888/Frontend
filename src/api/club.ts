@@ -1,8 +1,11 @@
 import axios from "axios";
 import { z } from "zod";
 
+export const CLUB_SERVICE_URL =
+  import.meta.env.VITE_CLUB_SERVICE_URL || "http://localhost:8082";
+
 const api = axios.create({
-  baseURL: "http://localhost:8082",
+  baseURL: CLUB_SERVICE_URL,
   headers: { "Content-Type": "application/json" },
 });
 
