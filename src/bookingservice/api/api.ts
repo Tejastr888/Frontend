@@ -185,7 +185,8 @@ import {
 import { Schedule } from "@/bookingservice/types/componentTypes"; // Assuming Schedule is a similar type to ScheduleResponse
 
 // Configuration
-const API_BASE_URL = "http://localhost:8083";
+const API_BASE_URL =
+  import.meta.env.VITE_BOOKING_SERVICE_URL || "http://localhost:8083";
 
 class BookingApi {
   private axiosInstance: AxiosInstance;
