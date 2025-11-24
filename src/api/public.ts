@@ -1,10 +1,10 @@
 import axios from "axios";
 import { z } from "zod";
 import { FacilityTypeEnum } from "@/enums/enums";
-import { SportOptionSchema } from "./club";
+import { CLUB_SERVICE_URL, SportOptionSchema } from "./club";
 
 const api = axios.create({
-  baseURL: "http://localhost:8082",
+  baseURL: CLUB_SERVICE_URL,
   headers: { "Content-Type": "application/json" },
 });
 
