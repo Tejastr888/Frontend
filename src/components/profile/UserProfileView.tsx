@@ -22,14 +22,20 @@ import {
   Facebook,
   Linkedin,
 } from "lucide-react";
-import { getMyProfile, UserProfile } from "@/api/userProfile";
+import {
+  getMyProfile,
+  UserProfile,
+  updateUserProfile,
+} from "@/api/userProfile";
 import { useToast } from "@/components/ui/use-toast";
+import { ProfileEditForm } from "./profile-edit-form";
 
 export default function UserProfileView() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -56,6 +62,20 @@ export default function UserProfileView() {
     }
   };
 
+  const handleSaveProfile = async (data: Partial<UserProfile>) => {
+    try {
+      const updated = await updateUserProfile(data as any);
+      setProfile(updated);
+      setIsEditing(false);
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -72,6 +92,16 @@ export default function UserProfileView() {
           <Button>Create Profile</Button>
         </CardContent>
       </Card>
+    );
+  }
+
+  if (isEditing) {
+    return (
+      <ProfileEditForm
+        profile={profile}
+        onSave={handleSaveProfile}
+        onCancel={() => setIsEditing(false)}
+      />
     );
   }
 
@@ -109,7 +139,11 @@ export default function UserProfileView() {
                   <h2 className="text-2xl font-bold">{user?.name}</h2>
                   <p className="text-muted-foreground">{user?.email}</p>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Profile
                 </Button>
