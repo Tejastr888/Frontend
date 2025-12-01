@@ -69,15 +69,20 @@ export const GET_MY_PROFILE = gql`
 export const CREATE_PROFILE = gql`
   mutation CreateProfile($input: CreateProfileInput!) {
     createProfile(input: $input) {
-      id
-      userId
       bio
       avatarUrl
+      dateOfBirth
+      gender
       city
       state
       country
       skillLevel
-      createdAt
+      preferredTimeSlots
+      isProfessional
+      yearsOfExperience
+      achievements
+      profileVisibility
+      showStats
     }
   }
 `;

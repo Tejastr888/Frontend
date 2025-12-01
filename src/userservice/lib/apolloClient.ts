@@ -1,4 +1,10 @@
-import { ApolloClient, InMemoryCache, from, HttpLink, CombinedGraphQLErrors } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  from,
+  HttpLink,
+  CombinedGraphQLErrors,
+} from "@apollo/client";
 import { SetContextLink } from "@apollo/client/link/context";
 import { ErrorLink } from "@apollo/client/link/error";
 
@@ -22,7 +28,7 @@ const errorLink = new ErrorLink(({ error }: { error: any }) => {
 const authLink = new SetContextLink((prevContext) => {
   // guard for SSR / non-browser envs
   const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    typeof window !== "undefined" ? localStorage.getItem("auth.token") : null;
 
   return {
     ...prevContext,

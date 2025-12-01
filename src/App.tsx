@@ -15,6 +15,7 @@ import UserProfilePage from "./pages/UserProfilePage";
 import FacilityScheduleManagementPage from "./pages/FacilityScheduleManagementPage";
 import ScheduleSlotManagementPage from "./pages/ScheduleSlotManagementPage";
 import BookingDetailsPage from "./pages/BookingDetailsPage";
+import Profile from "./userservice/pages/Profile";
 
 function DashboardRedirect() {
   const { user } = useAuth();
@@ -50,7 +51,7 @@ export default function App() {
             path="/dashboard/profile"
             element={
               <ProtectedRoute>
-                <UserProfilePage />
+                <Profile />
               </ProtectedRoute>
             }
           />
