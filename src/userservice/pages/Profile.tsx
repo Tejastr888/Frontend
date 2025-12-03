@@ -24,9 +24,8 @@ export default function Profile() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
-  const { loading, error, data, refetch } = useQuery<MyProfileQueryData>(
-    GET_MY_PROFILE
-  );
+  const { loading, error, data, refetch } =
+    useQuery<MyProfileQueryData>(GET_MY_PROFILE);
 
   if (error && !error.message.includes("Profile not found")) {
     console.error("Error fetching profile:", error);

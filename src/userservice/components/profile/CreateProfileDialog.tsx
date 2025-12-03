@@ -93,7 +93,7 @@ export default function CreateProfileDialog({
     isProfessional: false,
     yearsOfExperience: 0,
     achievements: [] as string[],
-    profileVisibility: true,
+    profileVisibility: "",
     showStats: true,
   });
 
@@ -544,24 +544,60 @@ export default function CreateProfileDialog({
             </h3>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="space-y-0.5">
-                  <Label htmlFor="profileVisibility" className="text-base">
-                    Public Profile
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Make your profile visible to other users
-                  </p>
-                </div>
-                <Switch
-                  id="profileVisibility"
-                  checked={formData.profileVisibility}
-                  onCheckedChange={(checked: any) =>
-                    setFormData({ ...formData, profileVisibility: checked })
+              {/* Profile Visibility - Changed from Switch to Select */}
+              <div className="space-y-2">
+                <Label htmlFor="profileVisibility">Profile Visibility</Label>
+                <Select
+                  value={formData.profileVisibility}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, profileVisibility: value })
                   }
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select visibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PUBLIC">
+                      <div className="flex items-center gap-2">
+                        <span>🌍</span>
+                        <div>
+                          <div className="font-medium">Public</div>
+                          <div className="text-xs text-muted-foreground">
+                            Everyone can see your profile
+                          </div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="FRIENDS_ONLY">
+                      <div className="flex items-center gap-2">
+                        <span>👥</span>
+                        <div>
+                          <div className="font-medium">Friends Only</div>
+                          <div className="text-xs text-muted-foreground">
+                            Only your friends can see your profile
+                          </div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="PRIVATE">
+                      <div className="flex items-center gap-2">
+                        <span>🔒</span>
+                        <div>
+                          <div className="font-medium">Private</div>
+                          <div className="text-xs text-muted-foreground">
+                            Only you can see your profile
+                          </div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Control who can view your profile information
+                </p>
               </div>
 
+              {/* Show Stats - Keep as Switch */}
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="space-y-0.5">
                   <Label htmlFor="showStats" className="text-base">
@@ -574,7 +610,7 @@ export default function CreateProfileDialog({
                 <Switch
                   id="showStats"
                   checked={formData.showStats}
-                  onCheckedChange={(checked: any) =>
+                  onCheckedChange={(checked) =>
                     setFormData({ ...formData, showStats: checked })
                   }
                 />
