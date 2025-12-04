@@ -26,6 +26,7 @@ export default function Profile() {
 
   const { loading, error, data, refetch } =
     useQuery<MyProfileQueryData>(GET_MY_PROFILE);
+  console.log("Hellooooooooo", data);
 
   if (error && !error.message.includes("Profile not found")) {
     console.error("Error fetching profile:", error);

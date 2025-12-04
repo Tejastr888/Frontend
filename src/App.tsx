@@ -47,15 +47,15 @@ export default function App() {
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route
-            path="/dashboard/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
           <Route element={<DashboardLayout />}>
+            <Route
+              path="/dashboard/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/dashboard" element={<DashboardRedirect />} />
             <Route
               path="/dashboard/user"
